@@ -17,6 +17,7 @@ And just continue debugging. Changed value will automatically show up.
 - Click `X` button to remove all watches.
 - Click `+` button or press `A` key to add a new watch.
 - Click `T` button or press `T` key to change watch type.
+- Press `N` key to change watch's name
 
 ## Available types
 - `int8, int16, int32, int64, ...` for integer values
