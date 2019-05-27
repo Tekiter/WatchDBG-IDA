@@ -613,6 +613,7 @@ class WatchViewer(idaapi.PluginForm):
         if inp != None and inp.rstrip() != "":
             
             item.setName(inp)
+            self.update()
 
 
 
