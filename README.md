@@ -25,8 +25,11 @@ And just continue debugging. Changed value will automatically show up.
 - `char, str or string`
 
 `[type] [size]` will be converted to `type arr[size]`
+
 For example, `int32 5` will be converted to `int32 arr[5]`
-`char 3 4 5` will be converted to `int8 arr[5][4][3]`
+
+Furthermore, `char 3 4 5` will be converted to `int8 arr[5][4][3]`
+
 
 
 ## Screenshots
