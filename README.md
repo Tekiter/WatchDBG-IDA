@@ -35,3 +35,7 @@ Furthermore, `char 3 4 5` will be converted to `int8 arr[5][4][3];`
 
 ## Screenshots
 ![Overview](https://github.com/Tekiter/WatchDBG-IDA/blob/master/media/screenshots/overview.PNG "Overview Screenshot")
+![Overview](https://github.com/Tekiter/WatchDBG-IDA/blob/master/media/screenshots/overview2.PNG "Overview Screenshot")
+![Overview](https://github.com/Tekiter/WatchDBG-IDA/blob/master/media/screenshots/arr1.PNG "Overview Screenshot")
+![Overview](https://github.com/Tekiter/WatchDBG-IDA/blob/master/media/screenshots/arr2.PNG "Overview Screenshot")
+![Overview](https://github.com/Tekiter/WatchDBG-IDA/blob/master/media/screenshots/ptr.PNG "Overview Screenshot")
