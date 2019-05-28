@@ -171,7 +171,7 @@ class WChar(WInt):
         WInt.__init__(self, 1, False)
 
     def __repr__(self):
-        return "'%s'\t(0x%X)" % (self.char(), self.int())
+        return "%s\t(0x%X)" % (self.char(), self.int())
 
     def char(self):
         if self.int() >= 0x20 and self.int() <= 0x7e:
