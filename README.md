@@ -8,10 +8,10 @@ Put everything in `src` directory to `plugins` directory of your IDA installatio
 
 #### While you are debugging...
 
-- Shift + A to add a watch.
-- Shift + W to show watch view.
+- `Shift + A` to add a watch.
+- `Shift + W` to show watch view.
 
-And just continue debugging. Changed value will automatically show up.
+And just continue debugging. Changed values in watch will be automatically updated.
 
 #### Watch View Window
 - Click `X` button to remove all watches.
