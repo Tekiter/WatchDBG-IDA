@@ -13,6 +13,11 @@ Put everything in `src` directory to `plugins` directory of your IDA installatio
 
 And just continue debugging. Changed values in watch will be automatically updated.
 
+#### Add Dialog
+- You can type memory address (`0x4003a8`, `602194`)
+- Expressions are also allowed (`0x4007b0 + 0x10 * 4`)
+- Or use register's value (`rsp`, `rbp-0x48`)
+
 #### Watch View Window
 - Click `X` button to remove all watches.
 - Click `+` button or press `A` key to add a new watch.
