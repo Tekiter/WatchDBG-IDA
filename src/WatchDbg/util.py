@@ -6,7 +6,7 @@ import idaapi
 UTIL_VERSION = 100
 
 PLUGIN_NAME = "WatchDbg"
-PLUGIN_VERSION = [0,9,9]
+PLUGIN_VERSION = [1,0,0]
 IS_DEBUG = False
 
 
