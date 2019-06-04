@@ -29,23 +29,20 @@ class WatchDbgPlugin(idaapi.plugin_t):
 
         # setup actions
         self.actions = ActionManager()
-        self.actions.register("addmenuwindow", "Add Watch...", self.addWatchWindow, -1, "Shift-A")
-        self.actions.register("showview", "Show Watch", self.showWatchWindow, -1, "Shift-W")
+        self.actions.register("addmenuwindow", "Add Watch", self.addWatchWindow, -1, "Shift-A")
+        self.actions.register("showview", "Show WatchDbg List", self.showWatchWindow, -1, "Shift-W")
 
 
         # setup menus
+
+        
+        idaapi.attach_action_to_menu('Debugger/WatchDbg', self.actions.get("showview"), idaapi.SETMENU_APP)
+
         self.uihook = UIHook()
-        self.uihook.addPopup(self.actions.get("addmenuwindow"), "Watch/")
-        self.uihook.addPopup(self.actions.get("showview"), "Watch/")
+        
         self.uihook.hook()
 
 
-        # setup hotkeys
-        #self.hotkey = HotKeyManager()
-        #self.hotkey.add("Shift-A", self.addWatch)
-        #self.hotkey.add("Shift-S", self.addWatchWindow)
-        #self.hotkey.add("Shift-X", self.showWatch)
-        #self.hotkey.add("F5", sampleHotKey)
         
         self.dbghook = WatchDbgHook()
         self.dbghook.dbg_suspend_process = self.updateWatchWindow
