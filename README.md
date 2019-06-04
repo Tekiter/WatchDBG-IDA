@@ -27,6 +27,7 @@ And just continue debugging. Changed values in watch will be automatically updat
 ## Available types
 - `int8, int16, int32, int64, ...` for integer values
 - `uint8, uint16, uint32, uint64, ...` for unsigned integer values
+- `float, double`
 - `ptr or pointer`
 - `char, str or string`
 
