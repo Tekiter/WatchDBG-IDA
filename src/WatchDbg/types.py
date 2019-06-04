@@ -1,5 +1,6 @@
 import binascii
 import string
+import struct
 
 WORD_SIZE = 8
 
@@ -43,6 +44,10 @@ def parseType(typestr):
         return WChar()
     if typestr == "str" or typestr == "string":
         return WString()
+    if typestr == "float":
+        return WFloat()
+    if typestr == "double":
+        return WDouble()
 
     signed = True
     if typestr.startswith("uint"):
@@ -254,4 +259,29 @@ class WString(WArray):
         return "String"
 
 
+class WFloat(WInt):
+    def __init__(self):
+        WInt.__init__(self, 4, False)
+    
+    def __repr__(self):
+        return "%-30s(0x%X)" % (str(self.float()), self.int(False))
 
+    def float(self):
+        return struct.unpack("<f", self.rawvalue)[0]
+
+    def typerepr(self):
+        return "Float"
+
+
+class WDouble(WInt):
+    def __init__(self):
+        WInt.__init__(self, 8, False)
+
+    def __repr__(self):
+        return "%-30s(0x%X)" % (str(self.float()), self.int(False))
+    
+    def float(self):
+        return struct.unpack("<d", self.rawvalue)[0]
+
+    def typerepr(self):
+        return "Double"
