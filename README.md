@@ -1,6 +1,8 @@
 # WatchDBG-IDA
 Add a watch view to your IDA 7.0 similar to Visual Studio's watch view!
 
+[Download](https://github.com/Tekiter/WatchDBG-IDA/releases)
+
 ## Install
 Put everything in `src` directory to `plugins` directory of your IDA installation.
 
