@@ -1,6 +1,8 @@
 # WatchDBG-IDA
 비주얼 스튜디오에서 볼 수 있던 조사식 창을 IDA 디스어셈블러에서 사용해 보세요!
 
+[다운로드](https://github.com/Tekiter/WatchDBG-IDA/releases)
+
 ## 설치
 IDA 설치폴더의 `plugins` 폴더(기본값: `C:\Program Files\IDA 7.0\plugins`)에 `WatchDbg`폴더와 `WatchDbg.py`파일을 복사해 넣으세요.
 
