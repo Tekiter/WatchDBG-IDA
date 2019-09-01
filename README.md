@@ -3,6 +3,7 @@ Add a watch view to your IDA 7.0 similar to Visual Studio's watch view!
 
 ## Install
 Put everything in `src` directory to `plugins` directory of your IDA installation.
+(Default: `C:\Program Files\IDA 7.0\plugins`)
 
 ## Usage
 
