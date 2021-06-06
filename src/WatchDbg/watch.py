@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 from collections import deque
 
 import idaapi
@@ -15,11 +15,8 @@ def convertVarName(varstr):
     addr = ida_kernwin.str2ea(varstr)
     if addr != idaapi.BADADDR:
         return addr
-    
+
     return 0
-
-
-
 
 
 class WatchItem():
@@ -32,7 +29,7 @@ class WatchItem():
         self._valid = False
         self._id = WatchItem.nextid
         WatchItem.nextid += 1
-    
+
     def id(self):
         return self._id
 
@@ -50,25 +47,24 @@ class WatchItem():
         self._type.fromraw(val)
         return self._type
 
-
         # if idaapi.dbg_can_query():
-            
+
         #     val = idaapi.dbg_read_memory(self._address, self._type.size)
-            
+
         #     if val == -1 or val == None:
         #         self._valid = False
         #         return None
-            
+
         #     self._valid = True
-        
+
         #     self._type.fromraw(val)
         #     return self._type
         # return None
-    
+
     def setType(self, typ):
         backup = typ.raw()
         typ.fromraw(backup)
-        
+
         self._type = typ
 
     def type(self):
@@ -84,13 +80,10 @@ class WatchItem():
         return self._type.typerepr()
 
 
-    
 class Watcher():
-
 
     def __init__(self):
         self._watches = []
-
 
     def add(self, address, name=''):
         item = WatchItem(address, WInt())
@@ -98,15 +91,13 @@ class Watcher():
 
         self._watches.append(item)
         return item.id()
-    
+
     def clear(self):
         self._watches = []
 
     def exists(self, address):
         i = self._indexByAddress(address)
         return i != None
-    
-
 
     def delete(self, address):
         i = self._indexByAddress(address)
@@ -145,14 +136,12 @@ class Watcher():
 
 
 class TreeNode:
-    columns = {"name":0, "address":1, "value":2, "type":3}
+    columns = {"name": 0, "address": 1, "value": 2, "type": 3}
 
     def __init__(self):
         self._parent = None
         self.children = []
         self.canchangetype = False
-
-    
 
     def row(self):
         if self._parent != None:
@@ -170,7 +159,7 @@ class TreeNode:
     def addChild(self, child):
         child._parent = self
         self.children.append(child)
-        
+
     def parent(self):
         return self._parent
 
@@ -185,7 +174,6 @@ class ConstantNode(TreeNode):
 
     def data(self, col):
         return self._data[col]
-
 
 
 class WatchNode(TreeNode):
@@ -222,7 +210,7 @@ class WatchNode(TreeNode):
         if col == self.columns["name"]:
             return str(self.name())
         if col == self.columns["address"]:
-            return str("0x%X"%self.address())
+            return str("0x%X" % self.address())
         if col == self.columns["value"]:
             val = self.value()
             if val == None:
@@ -242,18 +230,13 @@ class WatchNode(TreeNode):
         return False
 
 
-
 class WatchModel(QAbstractItemModel):
-    
 
     def __init__(self, watch):
         QAbstractItemModel.__init__(self, None)
         self.watch = Watcher()
         self.watch = watch
         self._root = TreeNode()
-
-    
-
 
     def update(self):
 
@@ -263,33 +246,27 @@ class WatchModel(QAbstractItemModel):
             newc = []
             for i in self._root.children:
                 if i.watchItem() in watch:
-                    
+
                     newc.append(i)
             self._root.children = newc
 
-            vitems = {i.watchId():i for i in self._root.children}
-            
+            vitems = {i.watchId(): i for i in self._root.children}
+
             for i in watch:
                 if i.id() not in vitems:
                     self._root.addChild(WatchNode(i))
-                
 
-
-
-            
         except Exception as e:
             debugline(e.message)
         finally:
             self.layoutChanged.emit()
-        
 
-    
     def canFetchMore(self, parent):
         if self.hasChildren(parent):
             if not parent.isValid():
                 return True
             pitem = parent.internalPointer()
-            
+
             if pitem.childCount() > 0:
                 return False
             return True
@@ -302,18 +279,14 @@ class WatchModel(QAbstractItemModel):
         if not parent.isValid():
             return
 
-
         cnodes = []
 
         pitem = parent.internalPointer()
-
-        
 
         if isinstance(pitem, ConstantNode):
             return
         elif pitem.type().typeequals(WPtr):
 
-            
             val = pitem.value()
             if val == None:
                 return
@@ -323,10 +296,9 @@ class WatchModel(QAbstractItemModel):
 
             if readMemory(readMemory(rval, WORD_SIZE), WORD_SIZE) == None:
                 newitem.setType(WInt())
-            
 
             newnode = WatchNode(newitem)
-            
+
             self.beginInsertRows(parent, 0, 0)
             pitem.addChild(newnode)
             self.endInsertRows()
@@ -336,18 +308,19 @@ class WatchModel(QAbstractItemModel):
             val = pitem.value()
             if val == None:
                 return
-            
+
             baseaddr = pitem.address()
             newnodes = []
             for i in range(val.elementcount()):
-                newnode = WatchItem(baseaddr + val.calcindex(i), val.elementtype())
-                
-                newnode.setName("[%d]"%i)
+                newnode = WatchItem(
+                    baseaddr + val.calcindex(i), val.elementtype())
+
+                newnode.setName("[%d]" % i)
                 newnode.canchangetype = False
                 newnodes.append(WatchNode(newnode))
                 if newnode.value().int() == 0:
                     break
-            
+
             self.beginInsertRows(parent, 0, len(newnodes)-1)
             for i in newnodes:
                 pitem.addChild(i)
@@ -359,38 +332,33 @@ class WatchModel(QAbstractItemModel):
             val = pitem.value()
             if val == None:
                 return
-            
+
             baseaddr = pitem.address()
-            
+
             self.beginInsertRows(parent, 0, val.elementcount())
             for i in range(val.elementcount()):
-                newnode = WatchItem(baseaddr + val.calcindex(i), val.elementtype())
-                newnode.setName("[%d]"%i)
+                newnode = WatchItem(
+                    baseaddr + val.calcindex(i), val.elementtype())
+                newnode.setName("[%d]" % i)
                 newnode.canchangetype = False
                 pitem.addChild(WatchNode(newnode))
             self.endInsertRows()
-                
+
             return
-
-
-
-
 
     def hasChildren(self, parent):
         if not parent.isValid():
             return True
-        
+
         pitem = parent.internalPointer()
         if isinstance(pitem, ConstantNode):
             return False
-        
-        
 
         return pitem.canHasChildren()
-    
+
     def columnCount(self, parent):
         return len(self._root.columns)
-    
+
     def headerData(self, section, orientation, role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return self._root.columns.keys()[self._root.columns.values().index(section)]
@@ -411,7 +379,7 @@ class WatchModel(QAbstractItemModel):
             pitem = parent.internalPointer()
         else:
             pitem = self._root
-        
+
         citem = pitem.child(row)
         if citem:
             return self.createIndex(row, column, citem)
@@ -427,20 +395,20 @@ class WatchModel(QAbstractItemModel):
 
         if pitem == self._root:
             return QModelIndex()
-        
+
         return self.createIndex(pitem.row(), 0, pitem)
 
     def rowCount(self, parent):
         if parent.column() > 0:
             return 0
-        
+
         if parent.isValid():
             pitem = parent.internalPointer()
         else:
             pitem = self._root
-        
+
         return pitem.childCount()
-            
+
     def data(self, index, role):
         if not index.isValid():
             return None
@@ -462,7 +430,6 @@ class WatchModel(QAbstractItemModel):
 
 class WatchViewer(idaapi.PluginForm):
 
-
     def __init__(self, watch):
         idaapi.PluginForm.__init__(self)
         self.watch = watch
@@ -470,15 +437,13 @@ class WatchViewer(idaapi.PluginForm):
         self.callbacks = {}
 
     def OnCreate(self, form):
-        
+
         self.parent = self.FormToPyQtWidget(form)
         self.CreateForm()
 
     def CreateForm(self):
-        
-        layout = QVBoxLayout()
-        
 
+        layout = QVBoxLayout()
 
         tree = QTreeView()
         model = WatchModel(self.watch)
@@ -490,11 +455,9 @@ class WatchViewer(idaapi.PluginForm):
         self.tree.setColumnWidth(TreeNode.columns["address"], 180)
 
         layout.addWidget(self.tree)
-        
 
         toolbar = QHBoxLayout()
         toolbar.addStretch()
-
 
         addbtn = QPushButton("+")
         addbtn.setToolTip("Add an address to watch")
@@ -506,23 +469,18 @@ class WatchViewer(idaapi.PluginForm):
         typebtn.clicked.connect(self.changeType)
         toolbar.addWidget(typebtn)
 
-
         removebtn = QPushButton("-")
         removebtn.setToolTip("Remove a watch item")
         removebtn.clicked.connect(self.removeSelected)
         # toolbar.addWidget(removebtn)
-        
 
         removeallbtn = QPushButton("X")
         removeallbtn.setToolTip("Remove ALL items")
         removeallbtn.clicked.connect(self.removeAll)
         toolbar.addWidget(removeallbtn)
 
-        
-
         layout.addLayout(toolbar)
-        
-        
+
         tkeyshortcut = QShortcut(Qt.Key_T, self.tree)
         tkeyshortcut.activated.connect(self.changeType)
 
@@ -535,48 +493,44 @@ class WatchViewer(idaapi.PluginForm):
         # dkeyshortcut = QShortcut(Qt.Key_D, self.tree)
         # dkeyshortcut.activated.connect(self.removeSelected)
 
-
         debugline("View Created!")
         self.parent.setLayout(layout)
-    
 
     def OnClose(self, form):
         self.isclosed = True
 
-
-        
-    
     def add(self):
         name = ida_kernwin.ask_str("", 0, "Target address")
         addr = convertVarName(name)
         if addr > 0:
             self.watch.add(addr, name)
             self.model.update()
-            debugline("Watch %d added: 0x%X"%(self.watch.count(), addr))
+            debugline("Watch %d added: 0x%X" % (self.watch.count(), addr))
 
     def removeSelected(self):
-        
+
         if len(self.tree.selectedIndexes()) <= 0:
             return
         idx = self.tree.selectedIndexes()[0]
         item = idx.internalPointer()
         if not self.model.isTopLevel(item):
             return
-        
-        self.model.beginRemoveRows(self.model.parent(idx), item.row(), item.row())
+
+        self.model.beginRemoveRows(
+            self.model.parent(idx), item.row(), item.row())
         self.watch.removeById(item.watchId())
         self.model.endRemoveRows()
         print(item.watchId())
         # self.watch.removeById(item.watchId())
         # self.model.update()
-        
+
     def removeAll(self):
-        
+
         self.model = WatchModel(self.watch)
         self.watch.clear()
         self.update()
         self.tree.setModel(self.model)
-    
+
     def changeType(self):
         if len(self.tree.selectedIndexes()) <= 0:
             return
@@ -586,18 +540,16 @@ class WatchViewer(idaapi.PluginForm):
             return
 
         inp = ida_kernwin.ask_str("", 0, "New Type")
-        
+
         if inp != None and inp.rstrip() != "":
             typ = parseType(inp)
             if typ == None:
                 return
-            
+
             debugline("change type to %s" % typ.typerepr())
-        
-            
+
             self.model.changeType(index, typ)
-            
-        
+
         self.update()
 
     def changeName(self):
@@ -606,20 +558,13 @@ class WatchViewer(idaapi.PluginForm):
 
         index = self.tree.selectedIndexes()[0]
         item = index.internalPointer()
-        
-        
-        inp = ida_kernwin.ask_str("",0,"New Name")
+
+        inp = ida_kernwin.ask_str("", 0, "New Name")
 
         if inp != None and inp.rstrip() != "":
-            
+
             item.setName(inp)
             self.update()
 
-
-
-
     def update(self):
         self.model.update()
-
-    
-

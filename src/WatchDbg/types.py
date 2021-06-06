@@ -4,24 +4,28 @@ import struct
 
 WORD_SIZE = 8
 
+
 def setGlobalWordSize(size):
     global WORD_SIZE
     WORD_SIZE = size
+
 
 def getGlobalWordSize(size):
     global WORD_SIZE
     return WORD_SIZE
 
 
-typeconverttable = {"byte":"uint8","short":"int16","long":"int64","ushort":"uint16","ulong":"uint64",
-                    "word":"int16", "dword":"int32", "qword":"int64"}
+typeconverttable = {"byte": "uint8", "short": "int16", "long": "int64", "ushort": "uint16", "ulong": "uint64",
+                    "word": "int16", "dword": "int32", "qword": "int64"}
+
+
 def parseType(typestr):
     if not isinstance(typestr, str):
         return None
     typestr = typestr.lower()
 
-    for k,v in typeconverttable.items():
-        type = typestr.replace(k,v)
+    for k, v in typeconverttable.items():
+        type = typestr.replace(k, v)
 
     spstr = typestr.split()
     if len(spstr) > 1:
@@ -32,9 +36,8 @@ def parseType(typestr):
             count = int(spstr[-1])
         except ValueError:
             return None
-        
-        return WArray(count, childtype)
 
+        return WArray(count, childtype)
 
     if typestr == "raw":
         return WType()
@@ -60,7 +63,7 @@ def parseType(typestr):
             size = int(typestr[3:])
         except ValueError:
             return None
-        
+
         return WInt(size//8, signed)
     return None
 
@@ -77,16 +80,15 @@ class WType():
 
     def fromhex(self, string):
         if string.startswith('0x'):
-            string=string[2:]
+            string = string[2:]
 
         hx = binascii.unhexlify(string)
         if len(hx) > self.size:
-            hx=hx[:self.size]
+            hx = hx[:self.size]
         else:
             hx = hx.ljust(self.size, b'\x00')
 
         self.rawvalue = hx
-        
 
     def fromraw(self, data):
         if len(data) > self.size:
@@ -94,7 +96,6 @@ class WType():
         else:
             self.rawvalue = data.ljust(self.size, b'\x00')
 
-    
     def value(self):
         return self.rawvalue
 
@@ -112,11 +113,6 @@ class WType():
 
     def typerepr(self):
         return "Raw (size: %d)" % self.size
-    
-
-    
-    
-   
 
 
 class WInt(WType):
@@ -129,8 +125,8 @@ class WInt(WType):
         return "%-30d(0x%X)" % (self.int(), self.int(False))
 
     def fromint(self, value):
-        hx=""
-        
+        hx = ""
+
         if value < 0:
             c = self.maxval() + value + 1
         else:
@@ -143,14 +139,14 @@ class WInt(WType):
         self.fromraw(hx)
 
     def int(self, signed=None):
-        if signed==None:
+        if signed == None:
             signed = self.signed
 
         val = 0
         c = 0
         for i in self.rawvalue:
             val += ord(i) << (c * 8)
-            c+=1
+            c += 1
         msb = 1 << (self.size * 8 - 1)
         if signed:
             if (val & msb) != 0:
@@ -159,7 +155,7 @@ class WInt(WType):
         return val
 
     def maxval(self):
-        o=0
+        o = 0
         for i in range(self.size):
             o += 0xff << (i * 8)
         return o
@@ -192,8 +188,7 @@ class WPtr(WInt):
 
     def __init__(self):
         WInt.__init__(self, WORD_SIZE, False)
-        
-    
+
     def __repr__(self):
         return "0x%X" % (self.address())
 
@@ -204,21 +199,17 @@ class WPtr(WInt):
         return "Pointer"
 
 
-
-
 class WArray(WType):
 
-    def __init__(self, elementcount = 1, elementtype = WType()):
+    def __init__(self, elementcount=1, elementtype=WType()):
         WType.__init__(self, elementtype.size * elementcount)
         self._elementcount = elementcount
         self._elementtype = elementtype
         #self.size = elementtype.size * elementcount
 
     def __repr__(self):
-        
-        return "%s Array [%d] (size: %d)" % (self.elementtype().typerepr(), self.elementcount(), self.size)
-        
 
+        return "%s Array [%d] (size: %d)" % (self.elementtype().typerepr(), self.elementcount(), self.size)
 
     def elementcount(self):
         return self._elementcount
@@ -240,19 +231,18 @@ class WArray(WType):
         return "Array"
 
 
-
 class WStruct(WType):
     pass
-    
+
 
 class WString(WArray):
-    def __init__(self, bufsize = 100):
+    def __init__(self, bufsize=100):
         WArray.__init__(self, bufsize, WChar())
-    
+
     def __repr__(self):
-        
-        o=self.raw()
-        
+
+        o = self.raw()
+
         return o
 
     def typerepr(self):
@@ -262,7 +252,7 @@ class WString(WArray):
 class WFloat(WInt):
     def __init__(self):
         WInt.__init__(self, 4, False)
-    
+
     def __repr__(self):
         return "%-30s(0x%X)" % (str(self.float()), self.int(False))
 
@@ -279,7 +269,7 @@ class WDouble(WInt):
 
     def __repr__(self):
         return "%-30s(0x%X)" % (str(self.float()), self.int(False))
-    
+
     def float(self):
         return struct.unpack("<d", self.rawvalue)[0]
 
