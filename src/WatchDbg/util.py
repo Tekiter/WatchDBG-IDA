@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import idaapi
 
@@ -138,7 +141,7 @@ class WatchDbgHook(idaapi.DBG_Hooks):
         return 0
 
     def dbg_suspend_process(self):
-        print "Process suspended"
+        print("Process suspended")
 
     def dbg_exception(self, pid, tid, ea, exc_code, exc_can_cont, exc_ea, exc_info):
 

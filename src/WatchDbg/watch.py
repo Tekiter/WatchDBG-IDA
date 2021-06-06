@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 from collections import deque
 
 import idaapi
@@ -7,8 +11,8 @@ from PyQt5.QtWidgets import (QWidget, QPushButton, QLabel, QVBoxLayout, QMessage
                              QHBoxLayout, QShortcut)
 from PyQt5.QtCore import *
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QKeySequence
-from util import *
-from types import *
+from WatchDbg.util import *
+from WatchDbg.types import *
 
 
 def convertVarName(varstr):

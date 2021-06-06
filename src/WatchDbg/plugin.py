@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import idaapi
 import ida_kernwin
 
 from idc import *
-from util import *
-from watch import *
+from WatchDbg.util import *
+from WatchDbg.watch import *
 
 
 class WatchDbgPlugin(idaapi.plugin_t):
