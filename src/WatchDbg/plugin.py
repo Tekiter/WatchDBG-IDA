@@ -4,9 +4,7 @@ from __future__ import division
 from __future__ import print_function
 
 import idaapi
-import ida_kernwin
 
-from idc import *
 from WatchDbg.util import *
 from WatchDbg.watch import *
 
@@ -19,24 +17,23 @@ class WatchDbgPlugin(idaapi.plugin_t):
     wanted_name = "WatchDbg"
     wanted_hotkey = ""
 
-    def init(self):
+    def __init__(self, ida_api):
+        idaapi.plugin_t.__init__(self)
+        self.ida = ida_api
 
+    def init(self):
         self.view = None
 
         # create watcher
         self.watch = Watcher()
 
-        # setup actions
-        self.actions = ActionManager()
-        self.actions.register("addmenuwindow", "Add Watch",
-                              self.addWatchWindow, -1, "Shift-A")
-        self.actions.register("showview", "Show WatchDbg List",
-                              self.showWatchWindow, -1, "Shift-W")
+        self.ida.Action.register_action(
+            "add_watch", "Add Watch", self.addWatchWindow, "Shift-A")
+        self.ida.Action.register_action(
+            "show_watch_view", "Show WatchDbg List", self.showWatchWindow, "Shift-W")
 
-        # setup menus
-
-        idaapi.attach_action_to_menu(
-            'Debugger/WatchDbg', self.actions.get("showview"), idaapi.SETMENU_APP)
+        self.ida.Action.add_action_to_menu(
+            "show_watch_view", "Debugger/WatchDbg")
 
         self.uihook = UIHook()
 
@@ -59,15 +56,13 @@ class WatchDbgPlugin(idaapi.plugin_t):
             self.uihook.unhook()
         if self.dbghook:
             self.dbghook.unhook()
-        self.actions.cleanup()
 
-    def addWatch(self):
-        id = self.watch.add(here())
-        debugline("Watch %d added: %d -> 0x%X" %
-                  (id, self.watch.count(), here()))
+        self.ida.Action.unregister_action("add_watch")
+        self.ida.Action.unregister_action("show_watch_view")
 
     def addWatchWindow(self):
-        name = ida_kernwin.ask_str("", 0, "Target address")
+        name = self.ida.Modal.request_string("Target address")
+
         addr = convertVarName(name)
         if addr > 0:
             self.watch.add(addr, name)
