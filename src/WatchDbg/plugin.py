@@ -35,13 +35,7 @@ class WatchDbgPlugin(idaapi.plugin_t):
         self.ida.Action.add_action_to_menu(
             "show_watch_view", "Debugger/WatchDbg")
 
-        self.uihook = UIHook()
-
-        self.uihook.hook()
-
-        self.dbghook = WatchDbgHook()
-        self.dbghook.dbg_suspend_process = self.updateWatchWindow
-        self.dbghook.hook()
+        self.ida.Debug.set_hook_on_process_pause(self.updateWatchWindow)
 
         writeline("Successfully loaded! [v.%s]" %
                   '.'.join(map(str, PLUGIN_VERSION)))
@@ -52,10 +46,8 @@ class WatchDbgPlugin(idaapi.plugin_t):
         pass
 
     def term(self):
-        if self.uihook:
-            self.uihook.unhook()
-        if self.dbghook:
-            self.dbghook.unhook()
+
+        self.ida.Debug.remove_all_hooks()
 
         self.ida.Action.unregister_action("add_watch")
         self.ida.Action.unregister_action("show_watch_view")
