@@ -3,25 +3,16 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import idaapi
-
 from WatchDbg.util import *
 from WatchDbg.watch import *
 
 
-class WatchDbgPlugin(idaapi.plugin_t):
-    flags = idaapi.PLUGIN_HIDE
-    comment = ""
-
-    help = ""
-    wanted_name = "WatchDbg"
-    wanted_hotkey = ""
+class WatchDbgPlugin:
 
     def __init__(self, ida_api):
-        idaapi.plugin_t.__init__(self)
         self.ida = ida_api
 
-    def init(self):
+    def on_init(self):
         self.view = None
 
         # create watcher
@@ -40,13 +31,7 @@ class WatchDbgPlugin(idaapi.plugin_t):
         writeline("Successfully loaded! [v.%s]" %
                   '.'.join(map(str, PLUGIN_VERSION)))
 
-        return idaapi.PLUGIN_KEEP
-
-    def run(self, arg):
-        pass
-
-    def term(self):
-
+    def on_term(self):
         self.ida.Debug.remove_all_hooks()
 
         self.ida.Action.unregister_action("add_watch")
