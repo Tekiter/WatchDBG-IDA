@@ -3,8 +3,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from WatchDbg.util import *
-from WatchDbg.watch import *
+from WatchDbg.util import writeline, debugline, PLUGIN_VERSION
+from WatchDbg.watchview import WatchViewer, convertVarName
+from WatchDbg.core.watch import Watcher
 
 
 class WatchDbgPlugin:
@@ -13,9 +14,8 @@ class WatchDbgPlugin:
         self.ida = ida_api
 
     def on_init(self):
-        self.view = None
-        self.watch = Watcher()
-        self.window = WatchService(ida_api=self.ida, watch=self.watch)
+
+        self.window = WatchService(ida_api=self.ida)
 
         self.register_shortcut_and_menu()
         self.register_debug_hook()
@@ -48,10 +48,10 @@ class WatchDbgPlugin:
 
 
 class WatchService:
-    def __init__(self, ida_api, watch):
+    def __init__(self, ida_api):
         self.ida = ida_api
         self.view = None
-        self.watch = watch
+        self.watch = Watcher()
 
     def show_add_watch(self):
         name = self.ida.Modal.request_string("Target address")
