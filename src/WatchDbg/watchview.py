@@ -316,11 +316,10 @@ class WatchModel(QAbstractItemModel):
 
 class WatchViewer(idaapi.PluginForm):
 
-    def __init__(self, watch):
+    def __init__(self, model):
         idaapi.PluginForm.__init__(self)
-        self.watch = watch
         self.isclosed = False
-        self.callbacks = {}
+        self.model = model
 
     def OnCreate(self, form):
 
@@ -328,129 +327,92 @@ class WatchViewer(idaapi.PluginForm):
         self.CreateForm()
 
     def CreateForm(self):
+        self.set_treeview()
+        self.draw_layout()
+        self.connect_shortcuts()
 
-        layout = QVBoxLayout()
+        # dkeyshortcut = QShortcut(Qt.Key_D, self.tree)
+        # dkeyshortcut.activated.connect(self.removeSelected)
 
+        debugline("View Created!")
+
+    def set_treeview(self):
         tree = QTreeView()
-        model = WatchModel(self.watch)
-        model.update()
-        tree.setModel(model)
+
+        tree.setModel(self.model)
+        self.model.update()
         self.tree = tree
-        self.model = model
         self.tree.setColumnWidth(TreeNode.columns["value"], 350)
         self.tree.setColumnWidth(TreeNode.columns["address"], 180)
+
+    def draw_layout(self):
+
+        layout = QVBoxLayout()
 
         layout.addWidget(self.tree)
 
         toolbar = QHBoxLayout()
         toolbar.addStretch()
 
-        addbtn = QPushButton("+")
-        addbtn.setToolTip("Add an address to watch")
-        addbtn.clicked.connect(self.add)
-        toolbar.addWidget(addbtn)
+        toolbar.addWidget(create_button(
+            content="+",
+            tooltip="Add an address to watch",
+            onclick=self.on_add_click))
 
-        typebtn = QPushButton("T")
-        typebtn.setToolTip("Change type")
-        typebtn.clicked.connect(self.changeType)
-        toolbar.addWidget(typebtn)
+        toolbar.addWidget(create_button(
+            content="T",
+            tooltip="Change type",
+            onclick=self.on_change_type_click))
 
-        removebtn = QPushButton("-")
-        removebtn.setToolTip("Remove a watch item")
-        removebtn.clicked.connect(self.removeSelected)
-        # toolbar.addWidget(removebtn)
+        # toolbar.addWidget(create_button(
+        #     content="-",
+        #     tooltip="Remove a watch item",
+        #     onclick=self.on_remove_selected_click))
 
-        removeallbtn = QPushButton("X")
-        removeallbtn.setToolTip("Remove ALL items")
-        removeallbtn.clicked.connect(self.removeAll)
-        toolbar.addWidget(removeallbtn)
+        toolbar.addWidget(create_button(
+            content="X",
+            tooltip="Remove ALL items",
+            onclick=self.on_remove_all_click))
 
         layout.addLayout(toolbar)
 
+        self.parent.setLayout(layout)
+
+    def connect_shortcuts(self):
         tkeyshortcut = QShortcut(Qt.Key_T, self.tree)
-        tkeyshortcut.activated.connect(self.changeType)
+        tkeyshortcut.activated.connect(self.on_change_type_click)
 
         nkeyshortcut = QShortcut(Qt.Key_N, self.tree)
-        nkeyshortcut.activated.connect(self.changeName)
+        nkeyshortcut.activated.connect(self.on_change_name_click)
 
         akeyshortcut = QShortcut(Qt.Key_A, self.tree)
-        akeyshortcut.activated.connect(self.add)
-
-        # dkeyshortcut = QShortcut(Qt.Key_D, self.tree)
-        # dkeyshortcut.activated.connect(self.removeSelected)
-
-        debugline("View Created!")
-        self.parent.setLayout(layout)
+        akeyshortcut.activated.connect(self.on_add_click)
 
     def OnClose(self, form):
         self.isclosed = True
 
-    def add(self):
-        name = ida_kernwin.ask_str("", 0, "Target address")
-        addr = convertVarName(name)
-        if addr > 0:
-            self.watch.add(addr, name)
-            self.model.update()
-            debugline("Watch %d added: 0x%X" % (self.watch.count(), addr))
+    def on_add_click(*args, **kwargs):
+        pass
 
-    def removeSelected(self):
+    def on_change_type_click(*args, **kwargs):
+        pass
 
-        if len(self.tree.selectedIndexes()) <= 0:
-            return
-        idx = self.tree.selectedIndexes()[0]
-        item = idx.internalPointer()
-        if not self.model.isTopLevel(item):
-            return
+    def on_change_name_click(*args, **kwargs):
+        pass
 
-        self.model.beginRemoveRows(
-            self.model.parent(idx), item.row(), item.row())
-        self.watch.removeById(item.watchId())
-        self.model.endRemoveRows()
-        print(item.watchId())
-        # self.watch.removeById(item.watchId())
-        # self.model.update()
+    def on_remove_all_click(*args, **kwargs):
+        pass
 
-    def removeAll(self):
+    def on_remove_selected_click(*args, **kwargs):
+        pass
 
-        self.model = WatchModel(self.watch)
-        self.watch.clear()
-        self.update()
-        self.tree.setModel(self.model)
 
-    def changeType(self):
-        if len(self.tree.selectedIndexes()) <= 0:
-            return
+def nop_function(*args, **kwargs):
+    pass
 
-        index = self.tree.selectedIndexes()[0]
-        if not index.internalPointer().canchangetype:
-            return
 
-        inp = ida_kernwin.ask_str("", 0, "New Type")
-
-        if inp != None and inp.rstrip() != "":
-            typ = parseType(inp)
-            if typ == None:
-                return
-
-            debugline("change type to %s" % typ.typerepr())
-
-            self.model.changeType(index, typ)
-
-        self.update()
-
-    def changeName(self):
-        if len(self.tree.selectedIndexes()) <= 0:
-            return
-
-        index = self.tree.selectedIndexes()[0]
-        item = index.internalPointer()
-
-        inp = ida_kernwin.ask_str("", 0, "New Name")
-
-        if inp != None and inp.rstrip() != "":
-
-            item.setName(inp)
-            self.update()
-
-    def update(self):
-        self.model.update()
+def create_button(content="", tooltip="", onclick=nop_function):
+    btn = QPushButton(content)
+    btn.setToolTip(tooltip)
+    btn.clicked.connect(onclick)
+    return btn

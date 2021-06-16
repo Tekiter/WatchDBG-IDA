@@ -10,7 +10,6 @@ UTIL_VERSION = 100
 
 PLUGIN_NAME = "WatchDbg"
 PLUGIN_VERSION = [1, 0, 1]
-IS_DEBUG = False
 
 
 inf = idaapi.get_inf_structure()
@@ -21,8 +20,12 @@ elif inf.is_64bit():
     WORD_SIZE = 8
 
 
+def check_debug_flag():
+    return False
+
+
 def debugline(msg):
-    if IS_DEBUG:
+    if check_debug_flag():
         print("[DEBUG:%s] %s" % (PLUGIN_NAME, msg))
 
 
