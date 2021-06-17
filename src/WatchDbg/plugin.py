@@ -16,7 +16,7 @@ class WatchDbgPlugin:
 
     def on_init(self):
 
-        self.window = WatchService(ida_api=self.ida)
+        self.service = WatchService(ida_api=self.ida)
 
         self.register_shortcut_and_menu()
         self.register_debug_hook()
@@ -30,15 +30,15 @@ class WatchDbgPlugin:
 
     def register_shortcut_and_menu(self):
         self.ida.Action.register_action(
-            "add_watch", "Add Watch", lambda: self.window.show_add_watch(), "Shift-A")
+            "add_watch", "Add Watch", lambda: self.service.show_add_watch(), "Shift-A")
         self.ida.Action.register_action(
-            "show_watch_view", "Show WatchDbg List", lambda: self.window.show_watch(), "Shift-W")
+            "show_watch_view", "Show WatchDbg List", lambda: self.service.show_watch(), "Shift-W")
         self.ida.Action.add_action_to_menu(
             "show_watch_view", "Debugger/WatchDbg")
 
     def register_debug_hook(self):
         self.ida.Debug.set_hook_on_process_pause(
-            lambda: self.window.update_watch())
+            lambda: self.service.update_watch())
 
     def cleanup_shortcut_and_menu(self):
         self.ida.Action.unregister_action("add_watch")
@@ -61,7 +61,7 @@ class WatchService:
         if addr > 0:
             self.watch.add(addr, name)
             if self.view:
-                self.view.model.update()
+                self.model.update()
             debugline("Watch %d added: 0x%X" % (self.watch.count(), addr))
 
     def show_change_type(self):
@@ -80,8 +80,8 @@ class WatchService:
                 return
 
             debugline("change type to %s" % typ.typerepr())
-            self.view.model.changeType(index, typ)
-        self.view.model.update()
+            self.model.changeType(index, typ)
+        self.model.update()
 
     def show_change_name(self):
         if len(self.view.tree.selectedIndexes()) <= 0:
@@ -94,18 +94,17 @@ class WatchService:
 
         if inp != None and inp.rstrip() != "":
             item.setName(inp)
-            self.view.model.update()
+            self.model.update()
 
     def remove_all(self):
-        self.view.model = WatchModel(self.watch)
         self.watch.clear()
-        self.view.model.update()
-        self.view.tree.setModel(self.view.model)
+        self.model = WatchModel(self.watch)
+        self.view.set_new_model(self.model)
 
     def show_watch(self):
         debugline("showing view!")
         if self.view and not self.view.isclosed:
-            self.view.model.update()
+            self.model.update()
             debugline("refresh!")
             return
         else:
@@ -120,7 +119,7 @@ class WatchService:
 
     def update_watch(self):
         if self.view and not self.view.isclosed:
-            self.view.model.update()
+            self.model.update()
             debugline("auto refresh!")
 
     def print_watch(self):

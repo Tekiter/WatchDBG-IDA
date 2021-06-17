@@ -320,6 +320,7 @@ class WatchViewer(idaapi.PluginForm):
         idaapi.PluginForm.__init__(self)
         self.isclosed = False
         self.model = model
+        self.tree = None
 
     def OnCreate(self, form):
 
@@ -387,6 +388,12 @@ class WatchViewer(idaapi.PluginForm):
 
         akeyshortcut = QShortcut(Qt.Key_A, self.tree)
         akeyshortcut.activated.connect(self.on_add_click)
+
+    def set_new_model(self, model):
+        self.model = model
+        if self.tree:
+            self.tree.setModel(model)
+        model.update()
 
     def OnClose(self, form):
         self.isclosed = True
