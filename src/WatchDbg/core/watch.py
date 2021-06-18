@@ -1,3 +1,4 @@
+from WatchDbg.common import EventHandler
 from WatchDbg.core.types import *
 from WatchDbg.util import readMemory, debugline
 
@@ -63,20 +64,23 @@ class WatchItem():
         return self._type.typerepr()
 
 
-class Watcher():
+class Watcher:
 
     def __init__(self):
         self._watches = []
+        self.on_update = EventHandler()
 
     def add(self, address, name=''):
         item = WatchItem(address, WInt())
         item.setName(name)
 
         self._watches.append(item)
+        self.on_update.notify()
         return item.id()
 
     def clear(self):
         self._watches = []
+        self.on_update.notify()
 
     def exists(self, address):
         i = self._indexByAddress(address)
@@ -86,6 +90,7 @@ class Watcher():
         i = self._indexByAddress(address)
         if i != None:
             self._watches.pop(i)
+            self.on_update.notify()
             return True
         return False
 
@@ -115,4 +120,5 @@ class Watcher():
         debugline(idx)
         if idx != None:
             self._watches.pop(idx)
+            self.on_update.notify()
             debugline("Remove")

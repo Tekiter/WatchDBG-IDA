@@ -96,7 +96,7 @@ class WType():
 
     def fromraw(self, data):
         if len(data) > self.size:
-            self.fromraw = data[:self.size]
+            self.rawvalue = data[:self.size]
         else:
             self.rawvalue = data.ljust(self.size, b'\x00')
 

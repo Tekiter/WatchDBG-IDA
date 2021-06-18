@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (QWidget, QPushButton, QLabel, QVBoxLayout, QMessage
                              QHBoxLayout, QShortcut)
 from PyQt5.QtCore import *
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QKeySequence
+from WatchDbg.common import EventHandler
 from WatchDbg.util import *
 from WatchDbg.core.types import *
 from WatchDbg.core.watch import WatchItem
@@ -322,6 +323,12 @@ class WatchViewer(idaapi.PluginForm):
         self.model = model
         self.tree = None
 
+        self.on_add = EventHandler()
+        self.on_change_name = EventHandler()
+        self.on_change_type = EventHandler()
+        self.on_remove_all = EventHandler()
+        self.on_remove_selected = EventHandler()
+
     def OnCreate(self, form):
 
         self.parent = self.FormToPyQtWidget(form)
@@ -358,12 +365,12 @@ class WatchViewer(idaapi.PluginForm):
         toolbar.addWidget(create_button(
             content="+",
             tooltip="Add an address to watch",
-            onclick=self.on_add_click))
+            onclick=self.on_add.notify))
 
         toolbar.addWidget(create_button(
             content="T",
             tooltip="Change type",
-            onclick=self.on_change_type_click))
+            onclick=self.on_change_type.notify))
 
         # toolbar.addWidget(create_button(
         #     content="-",
@@ -373,7 +380,7 @@ class WatchViewer(idaapi.PluginForm):
         toolbar.addWidget(create_button(
             content="X",
             tooltip="Remove ALL items",
-            onclick=self.on_remove_all_click))
+            onclick=self.on_remove_all.notify))
 
         layout.addLayout(toolbar)
 
@@ -381,13 +388,13 @@ class WatchViewer(idaapi.PluginForm):
 
     def connect_shortcuts(self):
         tkeyshortcut = QShortcut(Qt.Key_T, self.tree)
-        tkeyshortcut.activated.connect(self.on_change_type_click)
+        tkeyshortcut.activated.connect(self.on_change_name.notify)
 
         nkeyshortcut = QShortcut(Qt.Key_N, self.tree)
-        nkeyshortcut.activated.connect(self.on_change_name_click)
+        nkeyshortcut.activated.connect(self.on_change_name.notify)
 
         akeyshortcut = QShortcut(Qt.Key_A, self.tree)
-        akeyshortcut.activated.connect(self.on_add_click)
+        akeyshortcut.activated.connect(self.on_add.notify)
 
     def set_new_model(self, model):
         self.model = model
@@ -397,21 +404,6 @@ class WatchViewer(idaapi.PluginForm):
 
     def OnClose(self, form):
         self.isclosed = True
-
-    def on_add_click(*args, **kwargs):
-        pass
-
-    def on_change_type_click(*args, **kwargs):
-        pass
-
-    def on_change_name_click(*args, **kwargs):
-        pass
-
-    def on_remove_all_click(*args, **kwargs):
-        pass
-
-    def on_remove_selected_click(*args, **kwargs):
-        pass
 
 
 def nop_function(*args, **kwargs):

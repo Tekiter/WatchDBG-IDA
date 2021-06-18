@@ -30,7 +30,7 @@ class WatchDbgPlugin:
 
     def register_shortcut_and_menu(self):
         self.ida.Action.register_action(
-            "add_watch", "Add Watch", lambda: self.service.show_add_watch(), "Shift-A")
+            "add_watch", "Add Watch", lambda: self.service.show_add_watch(None), "Shift-A")
         self.ida.Action.register_action(
             "show_watch_view", "Show WatchDbg List", lambda: self.service.show_watch(), "Shift-W")
         self.ida.Action.add_action_to_menu(
@@ -54,7 +54,7 @@ class WatchService:
         self.watch = Watcher()
         self.view = None
 
-    def show_add_watch(self):
+    def show_add_watch(self, e):
         name = self.ida.Modal.request_string("Target address")
 
         addr = convertVarName(name)
@@ -64,7 +64,7 @@ class WatchService:
                 self.model.update()
             debugline("Watch %d added: 0x%X" % (self.watch.count(), addr))
 
-    def show_change_type(self):
+    def show_change_type(self, e):
         if len(self.view.tree.selectedIndexes()) <= 0:
             return
 
@@ -83,7 +83,7 @@ class WatchService:
             self.model.changeType(index, typ)
         self.model.update()
 
-    def show_change_name(self):
+    def show_change_name(self, e):
         if len(self.view.tree.selectedIndexes()) <= 0:
             return
 
@@ -96,7 +96,7 @@ class WatchService:
             item.setName(inp)
             self.model.update()
 
-    def remove_all(self):
+    def remove_all(self, e):
         self.watch.clear()
         self.model = WatchModel(self.watch)
         self.view.set_new_model(self.model)
@@ -111,10 +111,11 @@ class WatchService:
             self.model = WatchModel(self.watch)
             self.model.update()
             self.view = WatchViewer(self.model)
-            self.view.on_add_click = self.show_add_watch
-            self.view.on_change_type_click = self.show_change_type
-            self.view.on_change_name_click = self.show_change_name
-            self.view.on_remove_all_click = self.remove_all
+            self.view.on_add.attach(self.show_add_watch)
+            self.view.on_change_name.attach(self.show_change_name)
+            self.view.on_change_type.attach(self.show_change_type)
+            self.view.on_remove_all.attach(self.remove_all)
+
             self.view.Show("Watch View")
 
     def update_watch(self):

@@ -5,7 +5,7 @@ from __future__ import print_function
 import unittest
 from utils import import_src
 
-types = import_src('WatchDbg.types').types
+types = import_src('WatchDbg.core.types').core.types
 
 
 class WTypeTest(unittest.TestCase):
@@ -25,6 +25,7 @@ class WTypeTest(unittest.TestCase):
         wtype = types.WType(size=4)
 
         wtype.fromraw(b'\x01\x02\x03\x04\x05\x06')
+
         self.assertEqual(wtype.raw(), b'\x01\x02\x03\x04')
 
     def testFromRawOfSmallerSize(self):
