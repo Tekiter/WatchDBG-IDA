@@ -65,8 +65,10 @@ class ConstantNode(TreeNode):
 
 
 class WatchNode(TreeNode):
-    def __init__(self, watchitem):
+    def __init__(self, watchitem, mem_reader):
         TreeNode.__init__(self)
+        self.mem_reader = mem_reader
+
         self._watchitem = watchitem
         self.canchangetype = True
 
@@ -86,7 +88,17 @@ class WatchNode(TreeNode):
         return self._watchitem.address()
 
     def value(self):
-        return self._watchitem.value()
+        address = self._watchitem.address()
+        typ = self._watchitem.type()
+        size = typ.size
+        data = self.mem_reader.read(address, size)
+
+        if data == None:
+            return None
+
+        typ.fromraw(data)
+
+        return typ
 
     def type(self):
         return self._watchitem.type()
@@ -120,8 +132,9 @@ class WatchNode(TreeNode):
 
 class WatchModel(QAbstractItemModel):
 
-    def __init__(self, watch):
+    def __init__(self, watch, mem_reader):
         QAbstractItemModel.__init__(self, None)
+        self.mem_reader = mem_reader
         self.watch = watch
         self._root = TreeNode()
 
@@ -141,7 +154,7 @@ class WatchModel(QAbstractItemModel):
 
             for i in watch:
                 if i.id() not in vitems:
-                    self._root.addChild(WatchNode(i))
+                    self._root.addChild(self._create_watch_node(i))
 
         except Exception as e:
             debugline(e.message)
@@ -181,10 +194,12 @@ class WatchModel(QAbstractItemModel):
             newitem = WatchItem(rval, WPtr())
             newitem.setName("")
 
-            if readMemory(readMemory(rval, WORD_SIZE), WORD_SIZE) == None:
+            pointer_value = self.mem_reader.read(rval, WORD_SIZE)
+
+            if self.mem_reader.read(pointer_value, WORD_SIZE) == None:
                 newitem.setType(WInt())
 
-            newnode = WatchNode(newitem)
+            newnode = self._create_watch_node(newitem)
 
             self.beginInsertRows(parent, 0, 0)
             pitem.addChild(newnode)
@@ -204,7 +219,7 @@ class WatchModel(QAbstractItemModel):
 
                 newnode.setName("[%d]" % i)
                 newnode.canchangetype = False
-                newnodes.append(WatchNode(newnode))
+                newnodes.append(self._create_watch_node(newnode))
                 if newnode.value().int() == 0:
                     break
 
@@ -228,7 +243,7 @@ class WatchModel(QAbstractItemModel):
                     baseaddr + val.calcindex(i), val.elementtype())
                 newnode.setName("[%d]" % i)
                 newnode.canchangetype = False
-                pitem.addChild(WatchNode(newnode))
+                pitem.addChild(self._create_watch_node(newnode))
             self.endInsertRows()
 
             return
@@ -313,6 +328,9 @@ class WatchModel(QAbstractItemModel):
 
     def isTopLevel(self, item):
         return item.parent() == self._root
+
+    def _create_watch_node(self, watchitem):
+        return WatchNode(watchitem, mem_reader=self.mem_reader)
 
 
 class WatchViewer(idaapi.PluginForm):

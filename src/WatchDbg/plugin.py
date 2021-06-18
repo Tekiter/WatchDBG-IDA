@@ -61,7 +61,8 @@ class WatchService:
             debugline("refresh!")
             return
         else:
-            self.model = WatchModel(self.watch)
+            self.model = WatchModel(
+                self.watch, mem_reader=MemoryReader(ida_api=self.ida))
             self.model.update()
             self.view = WatchViewer(self.model)
             self.view.on_add.attach(self.show_add_watch)
@@ -112,7 +113,8 @@ class WatchService:
 
     def remove_all(self, e):
         self.watch.clear()
-        self.model = WatchModel(self.watch)
+        self.model = WatchModel(
+            self.watch, mem_reader=MemoryReader(ida_api=self.ida))
         self.view.set_new_model(self.model)
 
     def update_watch(self):
@@ -120,13 +122,15 @@ class WatchService:
             self.model.update()
             debugline("auto refresh!")
 
-    def print_watch(self):
-        lst = self.watch.getList()
-        for i in lst:
-
-            val = i.value()
-            debugline("%d | %s\t  %s" % (i.id(), i.address(), val))
-
 
 def string_not_null_or_empty(string):
     return string != None and string.rstrip() != ""
+
+
+class MemoryReader:
+    def __init__(self, ida_api):
+        self.ida = ida_api
+
+    def read(self, address, size):
+        data = self.ida.Debug.read_memory(address, size)
+        return data

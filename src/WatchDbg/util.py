@@ -21,7 +21,7 @@ elif inf.is_64bit():
 
 
 def check_debug_flag():
-    return False
+    return True
 
 
 def debugline(msg):
@@ -38,11 +38,3 @@ def strToHex(string):
         return ''.join(["%02X" % ord(x) for x in string])
     except:
         return "??"
-
-
-def readMemory(address, size):
-    if idaapi.dbg_can_query():
-        val = idaapi.dbg_read_memory(address, size)
-
-        return val
-    return None

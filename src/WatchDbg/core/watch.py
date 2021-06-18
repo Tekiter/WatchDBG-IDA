@@ -1,6 +1,6 @@
 from WatchDbg.common import EventHandler
 from WatchDbg.core.types import *
-from WatchDbg.util import readMemory, debugline
+from WatchDbg.util import debugline
 
 
 class WatchItem():
@@ -19,31 +19,6 @@ class WatchItem():
 
     def address(self):
         return self._address
-
-    def value(self):
-        val = readMemory(self._address, self._type.size)
-
-        if val == None:
-            self._valid = False
-            return None
-        self._valid = True
-
-        self._type.fromraw(val)
-        return self._type
-
-        # if idaapi.dbg_can_query():
-
-        #     val = idaapi.dbg_read_memory(self._address, self._type.size)
-
-        #     if val == -1 or val == None:
-        #         self._valid = False
-        #         return None
-
-        #     self._valid = True
-
-        #     self._type.fromraw(val)
-        #     return self._type
-        # return None
 
     def setType(self, typ):
         backup = typ.raw()
