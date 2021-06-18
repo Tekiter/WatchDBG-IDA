@@ -54,53 +54,6 @@ class WatchService:
         self.watch = Watcher()
         self.view = None
 
-    def show_add_watch(self, e):
-        name = self.ida.Modal.request_string("Target address")
-
-        addr = convertVarName(name)
-        if addr > 0:
-            self.watch.add(addr, name)
-            if self.view:
-                self.model.update()
-            debugline("Watch %d added: 0x%X" % (self.watch.count(), addr))
-
-    def show_change_type(self, e):
-        if len(self.view.tree.selectedIndexes()) <= 0:
-            return
-
-        index = self.view.tree.selectedIndexes()[0]
-        if not index.internalPointer().canchangetype:
-            return
-
-        inp = self.ida.Modal.request_string("New Type")
-
-        if inp != None and inp.rstrip() != "":
-            typ = parseType(inp)
-            if typ == None:
-                return
-
-            debugline("change type to %s" % typ.typerepr())
-            self.model.changeType(index, typ)
-        self.model.update()
-
-    def show_change_name(self, e):
-        if len(self.view.tree.selectedIndexes()) <= 0:
-            return
-
-        index = self.view.tree.selectedIndexes()[0]
-        item = index.internalPointer()
-
-        inp = self.ida.Modal.request_string("New Name")
-
-        if inp != None and inp.rstrip() != "":
-            item.setName(inp)
-            self.model.update()
-
-    def remove_all(self, e):
-        self.watch.clear()
-        self.model = WatchModel(self.watch)
-        self.view.set_new_model(self.model)
-
     def show_watch(self):
         debugline("showing view!")
         if self.view and not self.view.isclosed:
@@ -118,6 +71,50 @@ class WatchService:
 
             self.view.Show("Watch View")
 
+    def show_add_watch(self, e):
+        name = self.ida.Modal.request_string("Target address")
+
+        addr = convertVarName(name)
+        if addr > 0:
+            self.watch.add(addr, name)
+            if self.view:
+                self.model.update()
+            debugline("Watch %d added: 0x%X" % (self.watch.count(), addr))
+
+    def show_change_type(self, e):
+        if not self.view.is_selected():
+            return
+
+        index = self.view.get_selected_index()
+        if not self.view.get_selected_item().canchangetype:
+            return
+
+        inp = self.ida.Modal.request_string("New Type")
+        if string_not_null_or_empty(inp):
+            typ = parseType(inp)
+            if typ == None:
+                return
+
+            debugline("change type to %s" % typ.typerepr())
+            self.model.changeType(index, typ)
+        self.model.update()
+
+    def show_change_name(self, e):
+        if not self.view.is_selected():
+            return
+
+        item = self.view.get_selected_item()
+
+        inp = self.ida.Modal.request_string("New Name")
+        if string_not_null_or_empty(inp):
+            item.setName(inp)
+            self.model.update()
+
+    def remove_all(self, e):
+        self.watch.clear()
+        self.model = WatchModel(self.watch)
+        self.view.set_new_model(self.model)
+
     def update_watch(self):
         if self.view and not self.view.isclosed:
             self.model.update()
@@ -129,3 +126,7 @@ class WatchService:
 
             val = i.value()
             debugline("%d | %s\t  %s" % (i.id(), i.address(), val))
+
+
+def string_not_null_or_empty(string):
+    return string != None and string.rstrip() != ""

@@ -335,16 +335,36 @@ class WatchViewer(idaapi.PluginForm):
         self.CreateForm()
 
     def CreateForm(self):
-        self.set_treeview()
-        self.draw_layout()
-        self.connect_shortcuts()
+        self._set_treeview()
+        self._draw_layout()
+        self._connect_shortcuts()
 
         # dkeyshortcut = QShortcut(Qt.Key_D, self.tree)
         # dkeyshortcut.activated.connect(self.removeSelected)
 
         debugline("View Created!")
 
-    def set_treeview(self):
+    def set_new_model(self, model):
+        self.model = model
+        if self.tree:
+            self.tree.setModel(model)
+        model.update()
+
+    def is_selected(self):
+        return len(self.tree.selectedIndexes()) <= 0
+
+    def get_selected_index(self):
+        index = self.view.tree.selectedIndexes()[0]
+        return index
+
+    def get_selected_item(self):
+        index = self.get_selected_index()
+        return index.internalPointer()
+
+    def OnClose(self, form):
+        self.isclosed = True
+
+    def _set_treeview(self):
         tree = QTreeView()
 
         tree.setModel(self.model)
@@ -353,7 +373,7 @@ class WatchViewer(idaapi.PluginForm):
         self.tree.setColumnWidth(TreeNode.columns["value"], 350)
         self.tree.setColumnWidth(TreeNode.columns["address"], 180)
 
-    def draw_layout(self):
+    def _draw_layout(self):
 
         layout = QVBoxLayout()
 
@@ -386,7 +406,7 @@ class WatchViewer(idaapi.PluginForm):
 
         self.parent.setLayout(layout)
 
-    def connect_shortcuts(self):
+    def _connect_shortcuts(self):
         tkeyshortcut = QShortcut(Qt.Key_T, self.tree)
         tkeyshortcut.activated.connect(self.on_change_name.notify)
 
@@ -395,15 +415,6 @@ class WatchViewer(idaapi.PluginForm):
 
         akeyshortcut = QShortcut(Qt.Key_A, self.tree)
         akeyshortcut.activated.connect(self.on_add.notify)
-
-    def set_new_model(self, model):
-        self.model = model
-        if self.tree:
-            self.tree.setModel(model)
-        model.update()
-
-    def OnClose(self, form):
-        self.isclosed = True
 
 
 def nop_function(*args, **kwargs):
