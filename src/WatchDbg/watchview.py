@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (QWidget, QPushButton, QLabel, QVBoxLayout, QMessage
 from PyQt5.QtCore import *
 from PyQt5.QtGui import QStandardItemModel, QStandardItem, QKeySequence
 from WatchDbg.common import EventHandler
-from WatchDbg.util import *
+from WatchDbg.util import WORD_SIZE, debugline
 from WatchDbg.core.types import *
 from WatchDbg.core.watch import WatchItem
 
@@ -104,7 +104,7 @@ class WatchNode(TreeNode):
         return self._watchitem.type()
 
     def typeStr(self):
-        return self._watchitem.typeStr()
+        return self._watchitem.type().typerepr()
 
     def data(self, col):
         if col == self.columns["name"]:
@@ -141,18 +141,17 @@ class WatchModel(QAbstractItemModel):
     def update(self):
 
         try:
-            watch = self.watch.getList()
 
             newc = []
             for i in self._root.children:
-                if i.watchItem() in watch:
+                if i.watchItem() in self.watch:
 
                     newc.append(i)
             self._root.children = newc
 
             vitems = {i.watchId(): i for i in self._root.children}
 
-            for i in watch:
+            for i in self.watch:
                 if i.id() not in vitems:
                     self._root.addChild(self._create_watch_node(i))
 
@@ -369,10 +368,10 @@ class WatchViewer(idaapi.PluginForm):
         model.update()
 
     def is_selected(self):
-        return len(self.tree.selectedIndexes()) <= 0
+        return len(self.tree.selectedIndexes()) > 0
 
     def get_selected_index(self):
-        index = self.view.tree.selectedIndexes()[0]
+        index = self.tree.selectedIndexes()[0]
         return index
 
     def get_selected_item(self):

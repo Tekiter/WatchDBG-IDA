@@ -6,7 +6,7 @@ from __future__ import print_function
 from WatchDbg.util import writeline, debugline, PLUGIN_VERSION
 from WatchDbg.watchview import WatchModel, WatchViewer, convertVarName
 from WatchDbg.core.watch import Watcher
-from WatchDbg.core.types import parseType
+from WatchDbg.core.types import parseType, WInt
 
 
 class WatchDbgPlugin:
@@ -77,10 +77,10 @@ class WatchService:
 
         addr = convertVarName(name)
         if addr > 0:
-            self.watch.add(addr, name)
+            self.watch.add(addr, name, WInt())
             if self.view:
                 self.model.update()
-            debugline("Watch %d added: 0x%X" % (self.watch.count(), addr))
+            debugline("Watch %d added: 0x%X" % (len(self.watch), addr))
 
     def show_change_type(self, e):
         if not self.view.is_selected():
