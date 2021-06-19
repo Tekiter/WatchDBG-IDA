@@ -75,22 +75,14 @@ class Watcher:
             return item
         return None
 
+    def get(self, address):
+        idx = self._indexByAddress(address)
+        if idx != None:
+            return self._watches[idx]
+        return None
+
     def _indexByAddress(self, address):
         for idx, watch in enumerate(self._watches):
             if watch.address() == address:
                 return idx
-        return None
-
-    def indexById(self, id):
-        for idx, watch in enumerate(self._watches):
-            if watch.id() == id:
-                return idx
-        return None
-
-    def removeById(self, id):
-        idx = self.indexById(id)
-        if idx != None:
-            item = self._watches.pop(idx)
-            self.on_change.notify()
-            return item
         return None
