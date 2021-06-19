@@ -5,7 +5,7 @@ from __future__ import print_function
 import unittest
 from utils import import_src
 
-types = import_src('WatchDbg.core.types').core.types
+types = import_src('WatchDbg.core.types')
 
 
 class WTypeTest(unittest.TestCase):

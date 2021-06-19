@@ -5,7 +5,7 @@ from __future__ import print_function
 import unittest
 from utils import import_src
 
-common = import_src('WatchDbg.common').common
+common = import_src('WatchDbg.common')
 
 
 class EventHandlerTest(unittest.TestCase):

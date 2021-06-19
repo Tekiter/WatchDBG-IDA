@@ -10,5 +10,10 @@ sys.path.insert(0, srcdir)
 
 
 def import_src(name):
-
-    return __import__(name)
+    path = name.split('.')
+    path = path[1:]
+    module = __import__(name)
+    while path:
+        module = getattr(module, path[0])
+        path = path[1:]
+    return module
