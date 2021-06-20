@@ -4,7 +4,8 @@ from __future__ import division
 from __future__ import print_function
 
 from WatchDbg.util import writeline, debugline, set_debug_flag_getter, PLUGIN_VERSION
-from WatchDbg.watchview import WatchModel, WatchViewer, convertVarName
+from WatchDbg.ui.view import WatchViewer, convertVarName
+from WatchDbg.ui.model import WatchModel
 from WatchDbg.core.watch import Watcher
 from WatchDbg.core.types import parseType, WInt
 
