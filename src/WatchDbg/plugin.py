@@ -4,7 +4,7 @@ from __future__ import division
 from __future__ import print_function
 
 from WatchDbg.util import writeline, debugline, set_debug_flag_getter, PLUGIN_VERSION
-from WatchDbg.ui.view import WatchViewer, convertVarName
+from WatchDbg.ui.view import WatchViewer
 from WatchDbg.ui.model import WatchModel
 from WatchDbg.core.watch import Watcher
 from WatchDbg.core.types import parseType, WInt
@@ -68,18 +68,20 @@ class WatchService:
             self.model = WatchModel(
                 self.watch, mem_reader=MemoryReader(ida_api=self.ida))
             self.model.update()
-            self.view = WatchViewer(self.model)
+
+            self.view = WatchViewer(
+                form=self.ida.View.create_form(), model=self.model)
             self.view.on_add.attach(self.show_add_watch)
             self.view.on_change_name.attach(self.show_change_name)
             self.view.on_change_type.attach(self.show_change_type)
             self.view.on_remove_all.attach(self.remove_all)
 
-            self.view.Show("Watch View")
+            self.view.show()
 
     def show_add_watch(self, e):
         name = self.ida.Modal.request_string("Target address")
 
-        addr = convertVarName(name)
+        addr = self.ida.Misc.convert_string_to_address(name)
         if addr > 0:
             self.watch.add(addr, name, WInt())
             if self.view:

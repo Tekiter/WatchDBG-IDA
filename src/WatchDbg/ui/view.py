@@ -3,31 +3,24 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import idaapi
-import ida_kernwin
 from PyQt5.QtWidgets import (QPushButton,  QVBoxLayout,  QTreeView,
                              QHBoxLayout, QShortcut)
-from PyQt5.QtCore import *
+from PyQt5.QtCore import Qt
 from WatchDbg.common import EventHandler
 from WatchDbg.util import debugline
 from WatchDbg.ui.model import TreeNode
 
 
-def convertVarName(varstr):
-    addr = ida_kernwin.str2ea(varstr)
-    if addr != idaapi.BADADDR:
-        return addr
+class WatchViewer(object):
 
-    return 0
-
-
-class WatchViewer(idaapi.PluginForm):
-
-    def __init__(self, model):
-        idaapi.PluginForm.__init__(self)
+    def __init__(self, form, model):
         self.isclosed = False
         self.model = model
         self.tree = None
+        self.form = form
+        form.title = "Watch View"
+        form.on_create.attach(self.OnCreate)
+        form.on_close.attach(self.OnClose)
 
         self.on_add = EventHandler()
         self.on_change_name = EventHandler()
@@ -35,9 +28,8 @@ class WatchViewer(idaapi.PluginForm):
         self.on_remove_all = EventHandler()
         self.on_remove_selected = EventHandler()
 
-    def OnCreate(self, form):
-
-        self.parent = self.FormToPyQtWidget(form)
+    def OnCreate(self, widget):
+        self.parent = widget
         self.CreateForm()
 
     def CreateForm(self):
@@ -49,6 +41,9 @@ class WatchViewer(idaapi.PluginForm):
         # dkeyshortcut.activated.connect(self.removeSelected)
 
         debugline("View Created!")
+
+    def show(self):
+        self.form.show()
 
     def set_new_model(self, model):
         self.model = model
@@ -67,7 +62,7 @@ class WatchViewer(idaapi.PluginForm):
         index = self.get_selected_index()
         return index.internalPointer()
 
-    def OnClose(self, form):
+    def OnClose(self, e):
         self.isclosed = True
 
     def _set_treeview(self):
