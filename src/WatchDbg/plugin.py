@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from WatchDbg.util import writeline, debugline, PLUGIN_VERSION
+from WatchDbg.util import writeline, debugline, set_debug_flag_getter, PLUGIN_VERSION
 from WatchDbg.watchview import WatchModel, WatchViewer, convertVarName
 from WatchDbg.core.watch import Watcher
 from WatchDbg.core.types import parseType, WInt
@@ -11,8 +11,11 @@ from WatchDbg.core.types import parseType, WInt
 
 class WatchDbgPlugin:
 
-    def __init__(self, ida_api):
+    def __init__(self, flags, ida_api):
+        self.flags = flags
         self.ida = ida_api
+
+        set_debug_flag_getter(lambda: flags['debug'])
 
     def on_init(self):
 

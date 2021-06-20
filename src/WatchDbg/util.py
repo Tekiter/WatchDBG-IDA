@@ -20,8 +20,16 @@ elif inf.is_64bit():
     WORD_SIZE = 8
 
 
+def debug_callback(): return False
+
+
+def set_debug_flag_getter(fn):
+    global debug_callback
+    debug_callback = fn
+
+
 def check_debug_flag():
-    return True
+    return debug_callback()
 
 
 def debugline(msg):
