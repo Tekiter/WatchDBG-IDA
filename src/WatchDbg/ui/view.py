@@ -11,16 +11,18 @@ from WatchDbg.util import debugline
 from WatchDbg.ui.model import TreeNode
 
 
-class WatchViewer(object):
+class WatchView(object):
+    title = "Watch View"
 
     def __init__(self, form, model):
-        self.isclosed = False
-        self.model = model
-        self.tree = None
         self.form = form
-        form.title = "Watch View"
-        form.on_create.attach(self.OnCreate)
-        form.on_close.attach(self.OnClose)
+        self.model = model
+        self.isclosed = False
+        self.tree = None
+
+        form.title = self.title
+        form.on_create.attach(self.on_create)
+        form.on_close.attach(self.on_close)
 
         self.on_add = EventHandler()
         self.on_change_name = EventHandler()
@@ -28,28 +30,14 @@ class WatchViewer(object):
         self.on_remove_all = EventHandler()
         self.on_remove_selected = EventHandler()
 
-    def OnCreate(self, widget):
-        self.parent = widget
-        self.CreateForm()
+    def on_create(self, widget):
+        self.widget = widget
 
-    def CreateForm(self):
         self._set_treeview()
         self._draw_layout()
         self._connect_shortcuts()
 
-        # dkeyshortcut = QShortcut(Qt.Key_D, self.tree)
-        # dkeyshortcut.activated.connect(self.removeSelected)
-
         debugline("View Created!")
-
-    def show(self):
-        self.form.show()
-
-    def set_new_model(self, model):
-        self.model = model
-        if self.tree:
-            self.tree.setModel(model)
-        model.update()
 
     def is_selected(self):
         return len(self.tree.selectedIndexes()) > 0
@@ -62,7 +50,7 @@ class WatchViewer(object):
         index = self.get_selected_index()
         return index.internalPointer()
 
-    def OnClose(self, e):
+    def on_close(self, e):
         self.isclosed = True
 
     def _set_treeview(self):
@@ -93,11 +81,6 @@ class WatchViewer(object):
             tooltip="Change type",
             onclick=self.on_change_type.notify))
 
-        # toolbar.addWidget(create_button(
-        #     content="-",
-        #     tooltip="Remove a watch item",
-        #     onclick=self.on_remove_selected_click))
-
         toolbar.addWidget(create_button(
             content="X",
             tooltip="Remove ALL items",
@@ -105,7 +88,7 @@ class WatchViewer(object):
 
         layout.addLayout(toolbar)
 
-        self.parent.setLayout(layout)
+        self.widget.setLayout(layout)
 
     def _connect_shortcuts(self):
         tkeyshortcut = QShortcut(Qt.Key_T, self.tree)
@@ -117,9 +100,17 @@ class WatchViewer(object):
         akeyshortcut = QShortcut(Qt.Key_A, self.tree)
         akeyshortcut.activated.connect(self.on_add.notify)
 
+    def show(self):
+        self.form.show()
 
-def nop_function(*args, **kwargs):
-    pass
+    def set_new_model(self, model):
+        self.model = model
+        if self.tree:
+            self.tree.setModel(model)
+        model.update()
+
+
+def nop_function(*args, **kwargs): pass
 
 
 def create_button(content="", tooltip="", onclick=nop_function):

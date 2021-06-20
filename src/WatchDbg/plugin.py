@@ -4,7 +4,7 @@ from __future__ import division
 from __future__ import print_function
 
 from WatchDbg.util import writeline, debugline, set_debug_flag_getter, PLUGIN_VERSION
-from WatchDbg.ui.view import WatchViewer
+from WatchDbg.ui.view import WatchView
 from WatchDbg.ui.model import WatchModel
 from WatchDbg.core.watch import Watcher
 from WatchDbg.core.types import parseType, WInt
@@ -69,13 +69,12 @@ class WatchService:
                 self.watch, mem_reader=MemoryReader(ida_api=self.ida))
             self.model.update()
 
-            self.view = WatchViewer(
+            self.view = WatchView(
                 form=self.ida.View.create_form(), model=self.model)
             self.view.on_add.attach(self.show_add_watch)
             self.view.on_change_name.attach(self.show_change_name)
             self.view.on_change_type.attach(self.show_change_type)
             self.view.on_remove_all.attach(self.remove_all)
-
             self.view.show()
 
     def show_add_watch(self, e):
