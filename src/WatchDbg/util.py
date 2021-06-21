@@ -39,10 +39,3 @@ def debugline(msg):
 
 def writeline(msg):
     print("[%s] %s" % (PLUGIN_NAME, msg))
-
-
-def strToHex(string):
-    try:
-        return ''.join(["%02X" % ord(x) for x in string])
-    except:
-        return "??"

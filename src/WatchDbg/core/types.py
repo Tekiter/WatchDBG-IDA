@@ -9,16 +9,6 @@ import struct
 WORD_SIZE = 8
 
 
-def setGlobalWordSize(size):
-    global WORD_SIZE
-    WORD_SIZE = size
-
-
-def getGlobalWordSize(size):
-    global WORD_SIZE
-    return WORD_SIZE
-
-
 typeconverttable = {"byte": "uint8", "short": "int16", "long": "int64", "ushort": "uint16", "ulong": "uint64",
                     "word": "int16", "dword": "int32", "qword": "int64"}
 
