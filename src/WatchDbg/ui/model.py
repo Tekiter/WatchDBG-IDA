@@ -1,10 +1,10 @@
 from __future__ import absolute_import
 from __future__ import division
 
-from PyQt5.QtCore import *
+from PyQt5.QtCore import QAbstractItemModel, QModelIndex, Qt
 from WatchDbg.util import WORD_SIZE, debugline
 from WatchDbg.core.types import *
-from WatchDbg.core.watch import WatchItem
+from WatchDbg.core.watch import WatchListItem
 
 
 class TreeNode:
@@ -153,8 +153,6 @@ class WatchModel(QAbstractItemModel):
         if not parent.isValid():
             return
 
-        cnodes = []
-
         pitem = parent.internalPointer()
 
         if pitem.type().typeequals(WPtr):
@@ -163,7 +161,7 @@ class WatchModel(QAbstractItemModel):
             if val == None:
                 return
             rval = val.int(False)
-            newitem = WatchItem(rval, WPtr())
+            newitem = WatchListItem(rval, WPtr())
             newitem.setName("")
 
             pointer_value = self.mem_reader.read(rval, WORD_SIZE)
@@ -186,7 +184,7 @@ class WatchModel(QAbstractItemModel):
             baseaddr = pitem.address()
             newnodes = []
             for i in range(val.elementcount()):
-                newnode = WatchItem(
+                newnode = WatchListItem(
                     baseaddr + val.calcindex(i), val.elementtype())
 
                 newnode.setName("[%d]" % i)
@@ -211,7 +209,7 @@ class WatchModel(QAbstractItemModel):
 
             self.beginInsertRows(parent, 0, val.elementcount())
             for i in range(val.elementcount()):
-                newnode = WatchItem(
+                newnode = WatchListItem(
                     baseaddr + val.calcindex(i), val.elementtype())
                 newnode.setName("[%d]" % i)
                 newnode.canchangetype = False

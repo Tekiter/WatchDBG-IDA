@@ -7,8 +7,8 @@ from utils import import_src
 
 watch = import_src('WatchDbg.core.watch')
 
-Watcher = watch.Watcher
-WatchItem = watch.WatchItem
+WatchList = watch.WatchList
+WatchListItem = watch.WatchListItem
 
 
 def dummyType(): return None
@@ -49,7 +49,7 @@ class TestWatcher(unittest.TestCase):
 
 
 def create_watch():
-    watch = Watcher()
+    watch = WatchList()
     watch.add(0x1234, 'test1', dummyType())
     watch.add(0x5678, 'test2', dummyType())
     return watch

@@ -10,7 +10,7 @@ def get_next_id():
     return ret
 
 
-class WatchItem():
+class WatchListItem():
     nextid = 0
 
     def __init__(self, address, wtype):
@@ -39,7 +39,7 @@ class WatchItem():
         return self._name
 
 
-class Watcher:
+class WatchList:
 
     def __init__(self):
         self._watches = []
@@ -52,7 +52,7 @@ class Watcher:
         return len(self._watches)
 
     def add(self, address, name, type):
-        item = WatchItem(address, type)
+        item = WatchListItem(address, type)
         item.setName(name)
 
         self._watches.append(item)

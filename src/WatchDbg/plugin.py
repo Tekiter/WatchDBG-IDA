@@ -6,7 +6,7 @@ from __future__ import print_function
 from WatchDbg.util import writeline, debugline, set_debug_flag_getter, PLUGIN_VERSION
 from WatchDbg.ui.view import WatchView
 from WatchDbg.ui.model import WatchModel
-from WatchDbg.core.watch import Watcher
+from WatchDbg.core.watch import WatchList
 from WatchDbg.core.types import parseType, WInt
 
 
@@ -55,7 +55,7 @@ class WatchDbgPlugin:
 class WatchService:
     def __init__(self, ida_api):
         self.ida = ida_api
-        self.watch = Watcher()
+        self.watch = WatchList()
         self.view = None
 
     def show_watch(self):
