@@ -14,29 +14,14 @@ class WatchListItem():
     nextid = 0
 
     def __init__(self, address, wtype):
-        self._address = address
-        self._type = wtype
-        self._name = ""
-        self._valid = False
+        self.address = address
+        self.type = wtype
+        self.name = ""
         self._id = get_next_id()
 
+    @property
     def id(self):
         return self._id
-
-    def address(self):
-        return self._address
-
-    def setType(self, type):
-        self._type = type
-
-    def type(self):
-        return self._type
-
-    def setName(self, name):
-        self._name = name
-
-    def name(self):
-        return self._name
 
 
 class WatchList:
@@ -53,11 +38,11 @@ class WatchList:
 
     def add(self, address, name, type):
         item = WatchListItem(address, type)
-        item.setName(name)
+        item.name = name
 
         self._watches.append(item)
         self.on_change.notify()
-        return item.id()
+        return item.id
 
     def clear(self):
         self._watches = []
@@ -83,6 +68,6 @@ class WatchList:
 
     def _indexByAddress(self, address):
         for idx, watch in enumerate(self._watches):
-            if watch.address() == address:
+            if watch.address == address:
                 return idx
         return None

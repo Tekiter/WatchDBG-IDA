@@ -113,7 +113,7 @@ class WatchService:
 
         inp = self.ida.Modal.request_string("New Name")
         if string_not_null_or_empty(inp):
-            item.setName(inp)
+            item.name = inp
             self.model.update()
 
     def remove_all(self, e):

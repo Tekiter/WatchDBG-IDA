@@ -51,20 +51,20 @@ class WatchNode(TreeNode):
         return self._watchitem
 
     def watchId(self):
-        return self._watchitem.id()
+        return self._watchitem.id
 
     def name(self):
-        return self._watchitem.name()
+        return self._watchitem.name
 
     def setName(self, name):
-        self._watchitem.setName(name)
+        self._watchitem.name = name
 
     def address(self):
-        return self._watchitem.address()
+        return self._watchitem.address
 
     def value(self):
-        address = self._watchitem.address()
-        typ = self._watchitem.type()
+        address = self._watchitem.address
+        typ = self._watchitem.type
         size = typ.size
         data = self.mem_reader.read(address, size)
 
@@ -76,10 +76,10 @@ class WatchNode(TreeNode):
         return typ
 
     def type(self):
-        return self._watchitem.type()
+        return self._watchitem.type
 
     def typeStr(self):
-        return self._watchitem.type().typerepr()
+        return self._watchitem.type.typerepr()
 
     def data(self, col):
         if col == self.columns["name"]:
@@ -93,7 +93,6 @@ class WatchNode(TreeNode):
             return str(val)
         if col == self.columns["type"]:
             return str(self.typeStr())
-        debugline("No column matching...")
         return ""
 
     def canHasChildren(self):
@@ -114,26 +113,19 @@ class WatchModel(QAbstractItemModel):
         self._root = TreeNode()
 
     def update(self):
+        newc = []
+        for i in self._root.children:
+            if i.watchItem() in self.watch:
 
-        try:
+                newc.append(i)
+        self._root.children = newc
 
-            newc = []
-            for i in self._root.children:
-                if i.watchItem() in self.watch:
+        vitems = {i.watchId(): i for i in self._root.children}
 
-                    newc.append(i)
-            self._root.children = newc
-
-            vitems = {i.watchId(): i for i in self._root.children}
-
-            for i in self.watch:
-                if i.id() not in vitems:
-                    self._root.addChild(self._create_watch_node(i))
-
-        except Exception as e:
-            debugline(e.message)
-        finally:
-            self.layoutChanged.emit()
+        for i in self.watch:
+            if i.id not in vitems:
+                self._root.addChild(self._create_watch_node(i))
+        self.layoutChanged.emit()
 
     def canFetchMore(self, parent):
         if self.hasChildren(parent):
@@ -162,12 +154,12 @@ class WatchModel(QAbstractItemModel):
                 return
             rval = val.int(False)
             newitem = WatchListItem(rval, WPtr())
-            newitem.setName("")
+            newitem.name = ""
 
             pointer_value = self.mem_reader.read(rval, WORD_SIZE)
 
             if self.mem_reader.read(pointer_value, WORD_SIZE) == None:
-                newitem.setType(WInt())
+                newitem.type = WInt()
 
             newnode = self._create_watch_node(newitem)
 
@@ -187,7 +179,7 @@ class WatchModel(QAbstractItemModel):
                 newnode = WatchListItem(
                     baseaddr + val.calcindex(i), val.elementtype())
 
-                newnode.setName("[%d]" % i)
+                newnode.name = "[%d]" % i
                 newnode.canchangetype = False
                 newnodes.append(self._create_watch_node(newnode))
                 if newnode.value().int() == 0:
@@ -211,7 +203,8 @@ class WatchModel(QAbstractItemModel):
             for i in range(val.elementcount()):
                 newnode = WatchListItem(
                     baseaddr + val.calcindex(i), val.elementtype())
-                newnode.setName("[%d]" % i)
+
+                newnode.name = "[%d]" % i
                 newnode.canchangetype = False
                 pitem.addChild(self._create_watch_node(newnode))
             self.endInsertRows()
@@ -292,7 +285,7 @@ class WatchModel(QAbstractItemModel):
     def changeType(self, index, wtype):
         item = index.internalPointer()
         item.children = []
-        item.watchItem().setType(wtype)
+        item.watchItem().type = wtype
 
     def isTopLevel(self, item):
         return item.parent() == self._root
