@@ -1,10 +1,10 @@
-from __future__ import absolute_import
-from __future__ import division
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, division, print_function
 
 from PyQt5.QtCore import QAbstractItemModel, QModelIndex, Qt
-from WatchDbg.util import WORD_SIZE, debugline
 from WatchDbg.core.types import *
 from WatchDbg.core.watch import WatchListItem
+from WatchDbg.util import WORD_SIZE, debugline
 
 
 class TreeNode:

@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
-from PyQt5.QtWidgets import (QPushButton,  QVBoxLayout,  QTreeView,
-                             QHBoxLayout, QShortcut)
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (QHBoxLayout, QPushButton, QShortcut, QTreeView,
+                             QVBoxLayout)
 from WatchDbg.common import EventHandler
-from WatchDbg.util import debugline
 from WatchDbg.ui.model import TreeNode
+from WatchDbg.util import debugline
 
 
 class WatchView(object):

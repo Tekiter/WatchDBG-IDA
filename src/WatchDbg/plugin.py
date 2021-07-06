@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
-from WatchDbg.util import writeline, debugline, set_debug_flag_getter, PLUGIN_VERSION
-from WatchDbg.ui.view import WatchView
-from WatchDbg.ui.model import WatchModel
+from WatchDbg.core.types import WInt, parseType
 from WatchDbg.core.watch import WatchList
-from WatchDbg.core.types import parseType, WInt
+from WatchDbg.ui.model import WatchModel
+from WatchDbg.ui.view import WatchView
+from WatchDbg.util import (PLUGIN_VERSION, debugline, set_debug_flag_getter,
+                           writeline)
 
 
 class WatchDbgPlugin:
@@ -42,7 +41,7 @@ class WatchDbgPlugin:
 
     def register_debug_hook(self):
         self.ida.Debug.set_hook_on_process_pause(
-            lambda: self.service.update_watch())
+            lambda: self.service.update_model())
 
     def cleanup_shortcut_and_menu(self):
         self.ida.Action.unregister_action("add_watch")
@@ -59,32 +58,36 @@ class WatchService:
         self.view = None
 
     def show_watch(self):
-        debugline("showing view!")
-        if self.view and not self.view.isclosed:
-            self.model.update()
-            debugline("refresh!")
+        if self.view_is_showing():
+            self.update_model()
             return
         else:
-            self.model = WatchModel(
-                self.watch, mem_reader=MemoryReader(ida_api=self.ida))
-            self.model.update()
+            self.set_new_model()
+            self.show_new_view()
 
-            self.view = WatchView(
-                form=self.ida.View.create_form(), model=self.model)
-            self.view.on_add.attach(self.show_add_watch)
-            self.view.on_change_name.attach(self.show_change_name)
-            self.view.on_change_type.attach(self.show_change_type)
-            self.view.on_remove_all.attach(self.remove_all)
-            self.view.show()
+    def set_new_model(self):
+        model = WatchModel(
+            self.watch, mem_reader=MemoryReader(ida_api=self.ida))
+        model.update()
+        self.model = model
+        return model
+
+    def show_new_view(self):
+        view = WatchView(form=self.ida.View.create_form(), model=self.model)
+        view.on_add.attach(self.show_add_watch)
+        view.on_change_name.attach(self.show_change_name)
+        view.on_change_type.attach(self.show_change_type)
+        view.on_remove_all.attach(self.remove_all)
+        view.show()
+
+        self.view = view
 
     def show_add_watch(self, e):
         name = self.ida.Modal.request_string("Target address")
-
         addr = self.ida.Misc.convert_string_to_address(name)
         if addr > 0:
             self.watch.add(addr, name, WInt())
-            if self.view:
-                self.model.update()
+            self.update_model()
             debugline("Watch %d added: 0x%X" % (len(self.watch), addr))
 
     def show_change_type(self, e):
@@ -103,7 +106,7 @@ class WatchService:
 
             debugline("change type to %s" % typ.typerepr())
             self.model.changeType(index, typ)
-        self.model.update()
+            self.update_model()
 
     def show_change_name(self, e):
         if not self.view.is_selected():
@@ -114,7 +117,7 @@ class WatchService:
         inp = self.ida.Modal.request_string("New Name")
         if string_not_null_or_empty(inp):
             item.name = inp
-            self.model.update()
+            self.update_model()
 
     def remove_all(self, e):
         self.watch.clear()
@@ -122,10 +125,12 @@ class WatchService:
             self.watch, mem_reader=MemoryReader(ida_api=self.ida))
         self.view.set_new_model(self.model)
 
-    def update_watch(self):
-        if self.view and not self.view.isclosed:
+    def update_model(self):
+        if self.view_is_showing():
             self.model.update()
-            debugline("auto refresh!")
+
+    def view_is_showing(self):
+        return self.view and not self.view.isclosed
 
 
 def string_not_null_or_empty(string):
