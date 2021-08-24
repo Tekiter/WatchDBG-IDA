@@ -1,18 +1,12 @@
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import binascii
-import string
 import struct
 
 WORD_SIZE = 8
-
-
-def setGlobalWordSize(size):
-    global WORD_SIZE
-    WORD_SIZE = size
-
-
-def getGlobalWordSize(size):
-    global WORD_SIZE
-    return WORD_SIZE
 
 
 typeconverttable = {"byte": "uint8", "short": "int16", "long": "int64", "ushort": "uint16", "ulong": "uint64",
@@ -92,7 +86,7 @@ class WType():
 
     def fromraw(self, data):
         if len(data) > self.size:
-            self.fromraw = data[:self.size]
+            self.rawvalue = data[:self.size]
         else:
             self.rawvalue = data.ljust(self.size, b'\x00')
 
