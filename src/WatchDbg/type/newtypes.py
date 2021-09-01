@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 import struct
+from functools import wraps
 
 # 타입 클래스의 역할
 # - 타입에 적합한 데이터 사이즈 저장
@@ -9,6 +10,15 @@ import struct
 
 class DataSizeNotMatchError(Exception):
     pass
+
+
+def fit_check(fn):
+    @wraps(fn)
+    def inner(self, binary_data):
+        if len(binary_data) != self.size:
+            raise DataSizeNotMatchError()
+        return fn(self, binary_data)
+    return inner
 
 
 class WatchType(object):
@@ -56,9 +66,9 @@ class SignedInt(AtomType):
     def size(self):
         return self._size
 
+    @fit_check
     def to_str(self, binary_data):
-        self._fit_check(binary_data)
-        intval = int.from_bytes(binary_data, "little", signed=True)
+        intval = _to_int(binary_data, self._size, True)
         return str(intval)
 
 
@@ -75,9 +85,9 @@ class UnsignedInt(AtomType):
     def size(self):
         return self._size
 
+    @fit_check
     def to_str(self, binary_data):
-        self._fit_check(binary_data)
-        intval = int.from_bytes(binary_data, "little", signed=False)
+        intval = _to_int(binary_data, self._size, False)
         return str(intval)
 
 
@@ -93,8 +103,8 @@ class Float(FloatingPointType):
     def size(self):
         return 4
 
+    @fit_check
     def to_str(self, binary_data):
-        self._fit_check(binary_data)
         return struct.unpack("<f", binary_data)[0]
 
 
@@ -110,8 +120,8 @@ class Double(FloatingPointType):
     def size(self):
         return 8
 
+    @fit_check
     def to_str(self, binary_data):
-        self._fit_check(binary_data)
         return struct.unpack("<d", binary_data)[0]
 
 
@@ -137,8 +147,8 @@ class Array(SequenceType):
     def element_type(self):
         return self._element_type
 
+    @fit_check
     def to_str(self, binary_data):
-        self._fit_check(binary_data)
         return "Array(length={})".format(self._length)
 
 
@@ -154,6 +164,28 @@ class String(Array):
     def size(self):
         return self._length
 
+    @fit_check
     def to_str(self, binary_data):
-        self._fit_check(binary_data)
         return repr(binary_data)
+
+
+def _to_int(rawvalue, size, signed=None):
+    def maxval():
+        o = 0
+        for i in range(size):
+            o += 0xff << (i * 8)
+        return o
+    if signed == None:
+        signed = signed
+
+    val = 0
+    c = 0
+    for i in rawvalue:
+        val += ord(i) << (c * 8)
+        c += 1
+    msb = 1 << (size * 8 - 1)
+    if signed:
+        if (val & msb) != 0:
+            val = -(maxval() - val) - 1
+
+    return val
