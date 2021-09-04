@@ -32,7 +32,7 @@ class TestWatcher(unittest.TestCase):
     def testDelete(self):
         watch = create_watch()
         item = watch.delete(0x1234)
-        self.assertEqual(item.address(), 0x1234)
+        self.assertEqual(item.address, 0x1234)
         self.assertEqual(len(watch), 1)
 
         watch = create_watch()
