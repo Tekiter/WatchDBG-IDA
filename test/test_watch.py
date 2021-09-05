@@ -16,40 +16,41 @@ def dummyType(): return None
 
 class TestWatcher(unittest.TestCase):
     def testAdd(self):
-        watch = create_watch()
+        [watch, _] = create_watch()
         self.assertEqual(len(watch), 2)
 
     def testClear(self):
-        watch = create_watch()
+        [watch, _] = create_watch()
         watch.clear()
         self.assertEqual(len(watch), 0)
 
     def testExists(self):
-        watch = create_watch()
-        self.assertTrue(watch.exists(0x1234))
-        self.assertFalse(watch.exists(0xffff))
+        [watch, idmap] = create_watch()
+        self.assertTrue(watch.exists(idmap[0x1234]))
+        self.assertFalse(watch.exists(0xffffff))
 
     def testDelete(self):
-        watch = create_watch()
-        item = watch.delete(0x1234)
-        self.assertEqual(item.address, 0x1234)
+        [watch, idmap] = create_watch()
+        item = watch.delete(idmap[0x1234])
+        self.assertEqual(item.id, idmap[0x1234])
         self.assertEqual(len(watch), 1)
 
-        watch = create_watch()
-        self.assertIsNone(watch.delete(0xffff))
+        [watch, idmap] = create_watch()
+        self.assertIsNone(watch.delete(0xffffff))
         self.assertEqual(len(watch), 2)
 
     def testIter(self):
-        watch = create_watch()
+        [watch, idmap] = create_watch()
         arr = list(watch)
         self.assertEqual(len(arr), 2)
-        self.assertIn(watch.get(0x1234), arr)
-        self.assertIn(watch.get(0x5678), arr)
-        self.assertIsNone(watch.get(0xffff), arr)
+        self.assertIn(watch.get(idmap[0x1234]), arr)
+        self.assertIn(watch.get(idmap[0x5678]), arr)
+        self.assertIsNone(watch.get(0xfffffff), arr)
 
 
 def create_watch():
     watch = WatchList()
-    watch.add(0x1234, 'test1', dummyType())
-    watch.add(0x5678, 'test2', dummyType())
-    return watch
+    idmap = {}
+    idmap[0x1234] = watch.add(0x1234, 'test1', dummyType())
+    idmap[0x5678] = watch.add(0x5678, 'test2', dummyType())
+    return [watch, idmap]

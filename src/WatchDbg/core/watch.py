@@ -48,20 +48,20 @@ class WatchList:
         self._watches = []
         self.on_change.notify()
 
-    def exists(self, address):
-        i = self._indexByAddress(address)
+    def exists(self, id):
+        i = self._indexById(id)
         return i != None
 
-    def delete(self, address):
-        i = self._indexByAddress(address)
+    def delete(self, id):
+        i = self._indexById(id)
         if i != None:
             item = self._watches.pop(i)
             self.on_change.notify()
             return item
         return None
 
-    def get(self, address):
-        idx = self._indexByAddress(address)
+    def get(self, id):
+        idx = self._indexById(id)
         if idx != None:
             return self._watches[idx]
         return None
@@ -69,5 +69,11 @@ class WatchList:
     def _indexByAddress(self, address):
         for idx, watch in enumerate(self._watches):
             if watch.address == address:
+                return idx
+        return None
+
+    def _indexById(self, id):
+        for idx, item in enumerate(self._watches):
+            if item.id == id:
                 return idx
         return None
